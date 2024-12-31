@@ -1,5 +1,12 @@
 <h1>CHIP 8 Emulator</h1>
+<a>This is my current journey into emulator, I decided to make this little project to get a deeper understanding of how a computer would work</a>
+<a>at the lower levels. My goals for this project is to get a fully working emulator to look similar to the image below</a>
 
+<br> </br>
+<b>THIS IS NOT MY EMULATOR JUST A REPRESENTATION OF MY FINAL PROJECT</b>
+<br> </br>
+
+<img src="https://user-images.githubusercontent.com/31244240/43002878-662c4d66-8bf8-11e8-9f4d-d7cd07b85819.png" alt="Image description" width="90%">
 
 
 
