@@ -12,12 +12,12 @@ struct Chip8
     // The first 512 bytes, from 0x000 to 0x1FF are reserved;
 
     uint8_t V[16];     // 16 Registers with 8-bit (0-F in hexadecimal)
-    int16_t I;         // Registor to store memory addresses
-    int16_t PC;        // Stores currently executing address
+    uint16_t I;         // Registor to store memory addresses
+    uint16_t PC;        // Stores currently executing address
     uint8_t SP;        // Stack pointer (Points at the top of the stack)
-    int16_t stack[16]; // Stack is an array of 16 16-bit values
+    uint16_t stack[16]; // Stack is an array of 16 16-bit values
 
-    Chip8() : I(0), PC(0), SP(0)
+    Chip8() : I(0), PC(0x200), SP(0)
     {
         std::fill(std::begin(mem), std::end(mem), 0);
         std::fill(std::begin(V), std::end(V), 0);
@@ -29,7 +29,6 @@ struct Chip8
     */
     bool loadROM(const char *file_path)
     {
-
         std::ifstream file(file_path, std::ios::binary);
 
         if (!file)
@@ -38,7 +37,7 @@ struct Chip8
             return false;
         }
 
-        file.seekg(0, std::ios::end);           // Moves pointer to the end of the file
+        file.seekg(0, std::ios::end); // Moves pointer to the end of the file
         std::streampos fileSize = file.tellg(); // Gets the byte position at the end
         file.seekg(0, std::ios::beg); //Moves the pointer back to the beginning of the file in order to transfer bytes into memory
 
@@ -60,6 +59,18 @@ struct Chip8
     void emulate_Cycle()
     {
         // fetch
+        uint8_t byte1, byte2;
+        uint16_t opcode;
+        byte1 = mem[PC];
+        byte2 = mem[PC+1];
+
+        opcode = (byte1 << 8) | byte2;
+
+
+        std::cout << std::hex << opcode << std::endl;
+
+
+        //Starting position is 512
 
         // decode and execute
     }

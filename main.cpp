@@ -11,5 +11,7 @@ int main()
 
     chip.loadROM(fileName);
 
+    chip.emulate_Cycle();
+    
     return 0;
 }
