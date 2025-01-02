@@ -70,16 +70,15 @@ struct Chip8
         PC += 2;
 
         // DECODE AND EXECUTE
-        uint8_t instruction = opcode >> 12; // First Nibble
+        uint8_t instruction = opcode >> 12; // FIRST NIBBLE
 
-        // Example OPCODE: 610A -> LD V1, 10
         switch (instruction)
         {
-        case (0x6):
+        case (0x6): // LD Vx , BYTE (SET Vx TO BYTE)
         {
-            uint8_t vx = (opcode >> 8) & 0x0F; // Extract register number
-            uint8_t byte = opcode & 0xFF;      // Extract byte value
-            V[vx] = byte;
+            uint8_t vx = (opcode >> 8) & 0x0F; // EXTRACT REGISTER NUMBER
+            uint8_t byte = opcode & 0xFF;      // EXTRACT BYTE VALUE
+            V[vx] = byte;                      //SETS THE Vx REGISTER TO BYTE
 
             break;
         }
