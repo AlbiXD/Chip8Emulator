@@ -7,11 +7,11 @@ int main()
 {
     Chip8 chip;
 
-    const char *fileName = "c8_test.c8";
+    const char *fileName = "register.c8";
 
     chip.loadROM(fileName);
 
     chip.emulate_Cycle();
-    
+
     return 0;
 }
