@@ -75,12 +75,6 @@ struct Chip8
         // Example OPCODE: 610A -> LD V1, 10
         switch (instruction)
         {
-        case (0x0):           
-        case (0x1):
-        case (0x2):
-        case (0x3):
-        case (0x4):
-        case (0x5):
         case (0x6):
         {
             uint8_t vx = (opcode >> 8) & 0x0F; // Extract register number
