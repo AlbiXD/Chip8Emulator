@@ -228,4 +228,4 @@ struct Chip8
 
 		return element;
 	}
-};
+}; 
