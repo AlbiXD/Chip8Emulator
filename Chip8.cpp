@@ -15,11 +15,14 @@ struct Chip8
 	uint16_t PC;                // Stores currently executing address
 	uint8_t SP;                 // Stack pointer (Points at the top of the stack)
 	uint16_t stack[16];         // Stack is an array of 16 16-bit values
-	uint8_t gbuffer[64 * 32];   // Created a buffer for the graphics 64 by 32
+	uint8_t gfx[64 * 32];   // Created a buffer for the graphics 64 by 
+	bool draw_flag = false;
+
 	Chip8() : I(0), PC(0x200), SP(0)
 	{
 		std::fill(std::begin(mem), std::end(mem), 0);
 		std::fill(std::begin(V), std::end(V), 0);
+		std::fill(std::begin(gfx), std::end(gfx), 0);
 		std::fill(std::begin(stack), std::end(stack), 0);
 	}
 
@@ -97,9 +100,9 @@ struct Chip8
 		case(0x7): {
 			uint8_t vx = (opcode >> 8) & 0x0F; // EXTRACT REGISTER NUMBER
 			uint8_t byte = opcode & 0xFF;      // EXTRACT BYTE VALUE
+			V[vx] = (V[vx] + byte) & 0xFF; // ENSURE WRAPPING IN ORDER TO AVOID GOING OVER 255
 
-
-			std::cout << "ADD INSTRUCTION V" << vx << ", " << byte << std::endl;
+			std::cout << "ADD INSTRUCTION V" << vx << ", " << (int)byte << std::endl;
 
 			break;
 		}
@@ -111,12 +114,42 @@ struct Chip8
 		}
 		case(0xD):
 		{
+			uint8_t x = V[(opcode >> 8) & 0x0F]; // X-COORDINATE FROM VX (WRAPPING TO PREVENT FURTHER THAN 64PX)
+			uint8_t y = V[(opcode >> 4) & 0x0F]; // Y-COORDINATE FROM VY (WRAPPING TO PREVENT FURTHER THAN 32PX)
+			uint8_t height = opcode & 0x0F;      // HEIGHT OF SPRITE
+			V[0xF] = 0;							 // Reset collision flag
+			
+			for (int row = 0; row < height; row++) {
+				uint8_t sprite_byte = mem[I + row];
+				for (int col = 0; col < 8; col++) {
+					if ((sprite_byte & (0x80 >> col)) != 0) {
+						int gfx_index = ((y + row) % 32) * 64 + ((x + col) % 64);
+						if (gfx[gfx_index] == 1) {
+							V[0xF] = 1; //COLLISION FLAG IS SET TO TRUE
+						}
+						gfx[gfx_index] ^= 1; //XOR OPERATOR
+					}
+				}
+			}
 
-			std::cout << "DRAW FLAG" << std::endl;
+			 
+			draw_flag = true; // Signal to redraw the screen
+			break;
+		}
+		case(0x0):
+		{
+			if ((opcode) == 0x00EE) {
+				std::cout << "RETURN" << std::endl;
+				PC = this->pop();
+				std::cout << "THIS IS CURRENT PC " << PC << std::endl;
+			}
+			else {
+				std::cout << "UNKNOWN OPCODE " << std::hex << opcode << std::endl;
+			}
 			break;
 		}
 		default:
-			std::cout << "UNKNOWN OPCODE" << std::endl;
+			std::cout << "UNKNOWN OPCODE " << std::hex << opcode << std::endl;
 		}
 	}
 
@@ -126,7 +159,9 @@ struct Chip8
 			std::cerr << "STACK OVERFLOW" << std::endl;
 			return;
 		}
-		stack[SP++] = element;
+		stack[++SP] = element;
+		std::cout << "WE HAVE PUSHED " << element << " ONTO THE STACK" << std::endl;
+
 	}
 
 	int16_t pop() {
@@ -137,6 +172,8 @@ struct Chip8
 		int16_t element = stack[SP];
 		stack[SP] = 0;
 		SP--;
+		std::cout << "WE HAVE POPPED " << element << " OUT OF THE STACK" << std::endl;
+
 		return element;
 	}
 };

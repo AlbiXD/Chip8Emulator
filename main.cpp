@@ -8,6 +8,26 @@
 #define WIDTH 64
 #define HEIGHT 32
 #define SCALE 10
+void renderScreen(SDL_Renderer* renderer, const uint8_t* gfx) {
+
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Black
+	SDL_RenderClear(renderer); // Clear the screen
+
+	// Set the draw color to white for pixels
+	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // White
+
+	for (int y = 0; y < 32; y++) {
+		for (int x = 0; x < 64; x++) {
+			int index = y * 64 + x;
+
+			if (gfx[index] == 1) {
+				SDL_Rect pixel = { x * SCALE, y * SCALE, SCALE, SCALE };
+				SDL_RenderFillRect(renderer, &pixel);
+			}
+		}
+	}
+	SDL_RenderPresent(renderer);
+}
 
 int main(int argc, char* argv[])
 {
@@ -23,7 +43,8 @@ int main(int argc, char* argv[])
 		return -1; //INDICATES THAT THE FIRST VALUE IS LESS THAN THE SECOND ONE
 	}
 
-	SDL_Window* window = SDL_CreateWindow("Chip-8 Emulator", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH*SCALE, HEIGHT*SCALE, SDL_WINDOW_SHOWN); //Initalizes the window
+	SDL_Window* window = SDL_CreateWindow("Chip-8 Emulator", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH * SCALE, HEIGHT * SCALE, SDL_WINDOW_SHOWN); //Initalizes the window
+	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
 	if (!window) { //Error creating window
 		SDL_Quit();
@@ -44,14 +65,19 @@ int main(int argc, char* argv[])
 				paused = true;
 			}
 		}
-
+		if (chip.draw_flag) {
+			renderScreen(renderer, chip.gfx);
+			chip.draw_flag = false;
+		}
 
 		SDL_Event event;
 		while (SDL_PollEvent(&event)) { //Event Handling Loop
 			if (event.type == SDL_QUIT)
 				running = false;
 		}
+		SDL_Delay(16);
 	}
+	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
 
