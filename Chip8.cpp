@@ -7,7 +7,6 @@
 
 struct Chip8
 {
-
 	uint8_t mem[4096]; // Memory is 4096 bytes, from location 0x000 to 0xFFF
 	// The first 512 bytes, from 0x000 to 0x1FF are reserved;
 
@@ -96,7 +95,12 @@ struct Chip8
 			break;
 		}
 		case(0x7): {
-			std::cout << "ADD INSTRUCTION" << std::endl;
+			uint8_t vx = (opcode >> 8) & 0x0F; // EXTRACT REGISTER NUMBER
+			uint8_t byte = opcode & 0xFF;      // EXTRACT BYTE VALUE
+
+
+			std::cout << "ADD INSTRUCTION V" << vx << ", " << byte << std::endl;
+
 			break;
 		}
 		case(0xA): {
