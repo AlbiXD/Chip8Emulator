@@ -17,13 +17,16 @@ struct Chip8
 	uint16_t stack[16];         // Stack is an array of 16 16-bit values
 	uint8_t gfx[64 * 32];   // Created a buffer for the graphics 64 by 
 	bool draw_flag = false;
-
+	bool clearScreen_flag = false;
+	uint8_t keys[16];
+	unsigned char x;
 	Chip8() : I(0), PC(0x200), SP(0)
 	{
 		std::fill(std::begin(mem), std::end(mem), 0);
 		std::fill(std::begin(V), std::end(V), 0);
 		std::fill(std::begin(gfx), std::end(gfx), 0);
 		std::fill(std::begin(stack), std::end(stack), 0);
+		std::fill(std::begin(keys), std::end(keys), 0);
 	}
 
 	/*
@@ -118,7 +121,7 @@ struct Chip8
 			uint8_t y = V[(opcode >> 4) & 0x0F]; // Y-COORDINATE FROM VY (WRAPPING TO PREVENT FURTHER THAN 32PX)
 			uint8_t height = opcode & 0x0F;      // HEIGHT OF SPRITE
 			V[0xF] = 0;							 // Reset collision flag
-			
+
 			for (int row = 0; row < height; row++) {
 				uint8_t sprite_byte = mem[I + row];
 				for (int col = 0; col < 8; col++) {
@@ -132,12 +135,17 @@ struct Chip8
 				}
 			}
 
-			 
-			draw_flag = true; // Signal to redraw the screen
+
+			draw_flag = true; // SIGNAL TO REDRAW THE SCREEN
 			break;
 		}
 		case(0x0):
 		{
+			if ((opcode) == 0xE0) {
+				std::cout << "CLEAR SCREEN CALLED" << std::endl;
+				clearScreen_flag = true;
+				break;
+			}
 			if ((opcode) == 0x00EE) {
 				std::cout << "RETURN" << std::endl;
 				PC = this->pop();

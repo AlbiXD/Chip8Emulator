@@ -1,0 +1,14 @@
+# Ignore build output
+/output/
+/x64/
+
+# Ignore user-specific files
+*.user
+
+# Ignore temporary files
+*.obj
+*.exe
+*.dll
+
+# Ignore version control metadata
+.git/

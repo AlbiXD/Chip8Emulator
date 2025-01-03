@@ -10,11 +10,11 @@
 #define SCALE 10
 void renderScreen(SDL_Renderer* renderer, const uint8_t* gfx) {
 
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Black
-	SDL_RenderClear(renderer); // Clear the screen
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // SCREEN COLOR
+	SDL_RenderClear(renderer); // CLEAR THE SCREEN
 
-	// Set the draw color to white for pixels
-	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // White
+	// SET THE DRAW COLOR
+	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
 	for (int y = 0; y < 32; y++) {
 		for (int x = 0; x < 64; x++) {
@@ -26,14 +26,14 @@ void renderScreen(SDL_Renderer* renderer, const uint8_t* gfx) {
 			}
 		}
 	}
-	SDL_RenderPresent(renderer);
+	SDL_RenderPresent(renderer); //PRESENT THE FRAME
 }
 
 int main(int argc, char* argv[])
 {
 	Chip8 chip;
 
-	const char* fileName = "simpler.c8";
+	const char* fileName = "1-chip8-logo.ch8";
 
 	chip.loadROM(fileName);
 
@@ -68,6 +68,11 @@ int main(int argc, char* argv[])
 		if (chip.draw_flag) {
 			renderScreen(renderer, chip.gfx);
 			chip.draw_flag = false;
+		}
+
+		if (chip.clearScreen_flag) {
+			SDL_RenderClear(renderer);
+			chip.clearScreen_flag = false;
 		}
 
 		SDL_Event event;
