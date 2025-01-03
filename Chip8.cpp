@@ -79,17 +79,60 @@ struct Chip8
 
 		switch (instruction)
 		{
-		case(0x1): {
+		case(0x1): { //1nnn - JUMP INSTRUCTION
 			uint16_t address = opcode & 0x0FFF;
 			PC = address;
 			std::cout << "JUMP INSTRUCTION TO ADDRESS " << PC << std::endl;
 			break;
 		}
-		case(0x2): {
+		case(0x2): { //2nnn - CALLING SUBROUTINE AT ADDRESS nnn
 			uint16_t address = opcode & 0x0FFF;
 			std::cout << "CALLING SUBROUTINE TO " << address << std::endl;
 			this->push(PC);
 			PC = address;
+			break;
+		}
+		case(0x3): { //3xkk SKIP INSTRUCTION IF Vx == kkk
+			uint8_t vx = (opcode >> 8) & 0x0F; // EXTRACT REGISTER NUMBER
+			uint8_t byte = opcode & 0xFF;      // EXTRACT BYTE VALUE
+
+			if (V[vx] == byte) {
+				PC += 4;
+				break;
+			}
+
+			PC += 2;
+			break;
+
+		}
+		case(0x4): { //4xkk SKIP INSTRUCTION IF Vx != kkk
+			uint8_t vx = (opcode >> 8) & 0x0F; // EXTRACT REGISTER NUMBER
+			uint8_t byte = opcode & 0xFF;      // EXTRACT BYTE VALUE
+
+			if (V[vx] != byte) {
+				PC += 4;
+				break;
+			}
+
+			PC += 2;
+			break;
+
+		}
+		case(0x5): ////5xy0 SKIP INSTRUCTION IF Vx == Vy
+		{
+
+			uint8_t vx = (opcode >> 8) & 0x0F; // EXTRACT REGISTER NUMBER
+			uint8_t vy = (opcode >> 4) & 0x0F; // EXTRACT REGISTER NUMBER
+			if (!((opcode & 0x000F) == 0)) {
+				std::cout << "INVALID OPCODE FORMAT" << std::endl;
+				return;
+			}
+			if (V[vx] == V[vy]) {
+				PC += 4;
+				break;
+			}
+			
+			PC += 2;
 			break;
 		}
 		case (0x6): // LD Vx , BYTE (SET Vx TO BYTE)
@@ -100,7 +143,7 @@ struct Chip8
 			std::cout << "LD INSTRUCTION" << std::endl;
 			break;
 		}
-		case(0x7): {
+		case(0x7): {//7xkk ADD Vx, BYTE
 			uint8_t vx = (opcode >> 8) & 0x0F; // EXTRACT REGISTER NUMBER
 			uint8_t byte = opcode & 0xFF;      // EXTRACT BYTE VALUE
 			V[vx] = (V[vx] + byte) & 0xFF; // ENSURE WRAPPING IN ORDER TO AVOID GOING OVER 255
@@ -109,13 +152,13 @@ struct Chip8
 
 			break;
 		}
-		case(0xA): {
+		case(0xA): { //Annn SET VALUE OF I TO ADDRESS
 			uint16_t address = opcode & 0x0FFF;
 			I = address;
 			std::cout << "Register I is set to " << I << std::endl;
 			break;
 		}
-		case(0xD):
+		case(0xD): //Dxyn - DRAW Vx, Vy, HEIGHT
 		{
 			uint8_t x = V[(opcode >> 8) & 0x0F]; // X-COORDINATE FROM VX (WRAPPING TO PREVENT FURTHER THAN 64PX)
 			uint8_t y = V[(opcode >> 4) & 0x0F]; // Y-COORDINATE FROM VY (WRAPPING TO PREVENT FURTHER THAN 32PX)
@@ -139,14 +182,15 @@ struct Chip8
 			draw_flag = true; // SIGNAL TO REDRAW THE SCREEN
 			break;
 		}
-		case(0x0):
+		case(0x0): //0x0 INSTRUCTIONS
 		{
-			if ((opcode) == 0xE0) {
+			if ((opcode) == 0xE0) { //CLEAR SCREEN
+				std::fill(std::begin(gfx), std::end(gfx), 0);
 				std::cout << "CLEAR SCREEN CALLED" << std::endl;
 				clearScreen_flag = true;
 				break;
 			}
-			if ((opcode) == 0x00EE) {
+			if ((opcode) == 0x00EE) { //RETURN FROM SUBROUTINE
 				std::cout << "RETURN" << std::endl;
 				PC = this->pop();
 				std::cout << "THIS IS CURRENT PC " << PC << std::endl;
@@ -157,7 +201,7 @@ struct Chip8
 			break;
 		}
 		default:
-			std::cout << "UNKNOWN OPCODE " << std::hex << opcode << std::endl;
+			std::cout << "UNKNOWN OPCODE: " << std::hex << opcode << " at PC: " << PC << std::endl;
 		}
 	}
 
