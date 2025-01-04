@@ -219,11 +219,18 @@ struct Chip8
 			break;
 		}
 		case(0x9): {
-			if ((opcode & 1) == 1) {
+			if ((opcode & 0x00F) != 0x0) {
 				std::cout << "INVALID OPCODE FORMAT" << std::endl;
 				break;
-			}
 
+			//0009 Vx00 Vy00 0000
+			}
+			uint8_t x = (opcode >> 8) & 0x0F; // EXTRACT REGISTER NUMBER
+			uint8_t y = (opcode >> 4) & 0x0F; // EXTRACT REGISTER NUMBER
+
+			if (V[x] != V[y]) {
+				PC += 4;
+			}
 			break;
 		}
 		case(0xA): { //Annn SET VALUE OF I TO ADDRESS
