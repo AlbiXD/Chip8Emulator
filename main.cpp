@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
 {
 	Chip8 chip;
 
-	const char* fileName = "instruction8.c8";
+	const char* fileName = "corax.ch8";
 
 	chip.loadROM(fileName);
 
@@ -55,6 +55,7 @@ int main(int argc, char* argv[])
 	bool running = true;
 	bool paused = false;
 
+	uint32_t last_tick = SDL_GetTicks();
 	while (running) {
 
 		if (!paused) {
@@ -75,13 +76,130 @@ int main(int argc, char* argv[])
 			chip.clearScreen_flag = false;
 		}
 
+		/*
+			CHIP-8 KEYBOARD
+
+			1 | 2 | 3 | C
+			-------------
+			4 | 5 | 6 | D
+			-------------
+			7 | 8 | 9 | E
+			-------------
+			A | 0 | B | F 
+
+		
+		
+		
+		
+		
+		*/
 		SDL_Event event;
 		while (SDL_PollEvent(&event)) { //Event Handling Loop
-			if (event.type == SDL_QUIT)
+
+			switch (event.type) {
+			case(SDL_QUIT): {
 				running = false;
+				break;
+			}
+			case(SDL_KEYDOWN): {
+				switch (event.key.keysym.sym) {
+					case(SDLK_0): {
+						std::cout << "======================= 0 KEY UNPRESSED =======================" << std::endl;
+						break;
+					}
+					case(SDLK_1): {
+						std::cout << "======================= 1 KEY PRESSED =======================" << std::endl;
+						chip.keys[1] = 1;
+						break;
+					}
+					case(SDLK_2): {
+						std::cout << "======================= 2 KEY UNPRESSED =======================" << std::endl;
+						break;
+					}
+					case(SDLK_3): {
+						std::cout << "======================= 3 KEY UNPRESSED =======================" << std::endl;
+						break;
+					}
+					case(SDLK_4): {
+						std::cout << "======================= 4 KEY UNPRESSED =======================" << std::endl;
+						break;
+					}
+					case(SDLK_5): {
+						std::cout << "======================= 5 KEY UNPRESSED =======================" << std::endl;
+						break;
+					}
+					case(SDLK_6): {
+						std::cout << "======================= 6 KEY UNPRESSED =======================" << std::endl;
+						break;
+					}
+					case(SDLK_7): {
+						std::cout << "======================= 7 KEY UNPRESSED =======================" << std::endl;
+						break;
+					}
+					case(SDLK_8): {
+						std::cout << "======================= 8 KEY UNPRESSED =======================" << std::endl;
+						break;
+					}
+					case(SDLK_9): {
+						std::cout << "======================= 9 KEY UNPRESSED =======================" << std::endl;
+						break;
+					}
+				}
+				break;
+
+			}
+			case(SDL_KEYUP): {
+				switch (event.key.keysym.sym) {
+				case(SDLK_0): {
+					std::cout << "======================= 0 KEY UNPRESSED =======================" << std::endl;
+					break;
+				}
+				case(SDLK_1): {
+					std::cout << "======================= 1 KEY PRESSED =======================" << std::endl;
+					chip.keys[1] = 0;
+					break;
+				}
+				case(SDLK_2): {
+					std::cout << "======================= 2 KEY UNPRESSED =======================" << std::endl;
+					break;
+				}
+				case(SDLK_3): {
+					std::cout << "======================= 3 KEY UNPRESSED =======================" << std::endl;
+					break;
+				}
+				case(SDLK_4): {
+					std::cout << "======================= 4 KEY UNPRESSED =======================" << std::endl;
+					break;
+				}
+				case(SDLK_5): {
+					std::cout << "======================= 5 KEY UNPRESSED =======================" << std::endl;
+					break;
+				}
+				case(SDLK_6): {
+					std::cout << "======================= 6 KEY UNPRESSED =======================" << std::endl;
+					break;
+				}
+				case(SDLK_7): {
+					std::cout << "======================= 7 KEY UNPRESSED =======================" << std::endl;
+					break;
+				}
+				case(SDLK_8): {
+					std::cout << "======================= 8 KEY UNPRESSED =======================" << std::endl;
+					break;
+				}
+				case(SDLK_9): {
+					std::cout << "======================= 9 KEY UNPRESSED =======================" << std::endl;
+					break;
+				}
+				}
+				break;
+
+			}
+
 		}
-		SDL_Delay(16);
 	}
+		SDL_Delay(16);
+}
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	SDL_Quit();

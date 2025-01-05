@@ -4,7 +4,7 @@
 #include <fstream>
 #include <iomanip> // For std::hex and std::setfill
 #include <iostream>
-
+#include <random>
 struct Chip8
 {
 	uint8_t mem[4096]; // Memory is 4096 bytes, from location 0x000 to 0xFFF
@@ -19,6 +19,8 @@ struct Chip8
 	bool draw_flag = false;
 	bool clearScreen_flag = false;
 	uint8_t keys[16];
+	uint8_t delay_timer = 0;
+
 	unsigned char x;
 	Chip8() : I(0), PC(0x200), SP(0)
 	{
@@ -71,6 +73,7 @@ struct Chip8
 		byte2 = mem[PC + 1];
 
 		opcode = (byte1 << 8) | byte2; //COMBINE OPCODE IN MEMORY
+		std::cout << "OPCODE : " << std::hex << opcode << " ";
 
 		PC += 2; //INCREMENT PC BY 2
 
@@ -79,10 +82,28 @@ struct Chip8
 
 		switch (instruction)
 		{
+		case(0x0): //0x0 INSTRUCTIONS
+		{
+			if ((opcode) == 0xE0) { //CLEAR SCREEN
+				std::fill(std::begin(gfx), std::end(gfx), 0);
+				std::cout << "CLEAR SCREEN CALLED" << std::endl;
+				clearScreen_flag = true;
+				break;
+			}
+			if ((opcode) == 0x00EE) { //RETURN FROM SUBROUTINE
+				std::cout << "RETURN" << std::endl;
+				PC = this->pop();
+				std::cout << "THIS IS CURRENT PC " << PC << std::endl;
+			}
+			else {
+				std::cout << "UNKNOWN OPCODE " << std::hex << opcode << std::endl;
+			}
+			break;
+		}
 		case(0x1): { //1nnn - JUMP INSTRUCTION
 			uint16_t address = opcode & 0x0FFF;
 			PC = address;
-			std::cout << "JUMP INSTRUCTION TO ADDRESS " << PC << std::endl;
+			std::cout << "JUMP INSTRUCTION TO ADDRESS " << (int) PC << std::endl;
 			break;
 		}
 		case(0x2): { //2nnn - CALLING SUBROUTINE AT ADDRESS nnn
@@ -92,32 +113,29 @@ struct Chip8
 			PC = address;
 			break;
 		}
-		case(0x3): { //3xkk SKIP INSTRUCTION IF Vx == kkk
+		case (0x3): { // 3xkk - SKIP INSTRUCTION IF Vx == kk
 			uint8_t vx = (opcode >> 8) & 0x0F; // EXTRACT REGISTER NUMBER
 			uint8_t byte = opcode & 0xFF;      // EXTRACT BYTE VALUE
 
 			if (V[vx] == byte) {
-				PC += 4;
-				break;
+				PC += 2; // Skip the next instruction
 			}
-
-			PC += 2;
+			std::cout << "3xkk SKIP INSTRUCTION IF Vx == kk" << std::endl;
 			break;
-
 		}
+
 		case(0x4): { //4xkk SKIP INSTRUCTION IF Vx != kkk
 			uint8_t vx = (opcode >> 8) & 0x0F; // EXTRACT REGISTER NUMBER
 			uint8_t byte = opcode & 0xFF;      // EXTRACT BYTE VALUE
 
 			if (V[vx] != byte) {
-				PC += 4;
-				break;
+				PC += 2; // Skip the next instruction
 			}
 
-			PC += 2;
+			std::cout << "4xkk SKIP INSTRUCTION IF Vx != kk" << std::endl;
 			break;
-
 		}
+
 		case(0x5): ////5xy0 SKIP INSTRUCTION IF Vx == Vy
 		{
 
@@ -125,14 +143,12 @@ struct Chip8
 			uint8_t vy = (opcode >> 4) & 0x0F; // EXTRACT REGISTER NUMBER
 			if (!((opcode & 0x000F) == 0)) {
 				std::cout << "INVALID OPCODE FORMAT" << std::endl;
-				return;
-			}
-			if (V[vx] == V[vy]) {
-				PC += 4;
 				break;
 			}
-
-			PC += 2;
+			if (V[vx] == V[vy]) {
+				PC += 2;
+				break;
+			}
 			break;
 		}
 		case (0x6): // LD Vx , BYTE (SET Vx TO BYTE)
@@ -157,6 +173,7 @@ struct Chip8
 			uint8_t nibble = (opcode & 0x0F);
 			uint8_t x = (opcode >> 8) & 0x0F; // EXTRACT REGISTER NUMBER
 			uint8_t y = (opcode >> 4) & 0x0F; // EXTRACT REGISTER NUMBER
+
 			switch (nibble) {
 				case(0x00): {
 					V[x] = V[y];
@@ -175,7 +192,7 @@ struct Chip8
 				}
 				case(0x03): {
 					V[x] = V[x] ^ V[y];
-					std::cout << "XOR Vx, Vy" << std::endl;
+					std::cout << "XOR Vx, Vy "  << std::endl;
 					break;
 				}
 				case(0x04): {
@@ -229,7 +246,7 @@ struct Chip8
 			uint8_t y = (opcode >> 4) & 0x0F; // EXTRACT REGISTER NUMBER
 
 			if (V[x] != V[y]) {
-				PC += 4;
+				PC += 2;
 			}
 			break;
 		}
@@ -237,6 +254,21 @@ struct Chip8
 			uint16_t address = opcode & 0x0FFF;
 			I = address;
 			std::cout << "Register I is set to " << I << std::endl;
+			break;
+		}
+		case(0xB): {
+
+			PC = ((opcode) & 0x0FFF) + V[0];
+			std::cout << "JP V0, addr" << std::endl;
+			break;
+		}
+		case(0xC): {
+			uint8_t x = (opcode & 0xF00) >> 8;
+			uint8_t kk = opcode & 0x00FF;       
+
+			V[x] = generateRandomByte() & kk;
+			std::cout << "RND Vx, byte" << std::endl;
+
 			break;
 		}
 		case(0xD): //Dxyn - DRAW Vx, Vy, HEIGHT
@@ -259,54 +291,111 @@ struct Chip8
 				}
 			}
 
+			std::cout << "DRAW FLAG" << std::endl;
 
 			draw_flag = true; // SIGNAL TO REDRAW THE SCREEN
 			break;
 		}
-		case(0x0): //0x0 INSTRUCTIONS
+		case(0xE):
 		{
-			if ((opcode) == 0xE0) { //CLEAR SCREEN
-				std::fill(std::begin(gfx), std::end(gfx), 0);
-				std::cout << "CLEAR SCREEN CALLED" << std::endl;
-				clearScreen_flag = true;
+			uint8_t nibbles = (opcode & 0xFF);
+			uint8_t x = (opcode >> 8) & 0x0F; // EXTRACT REGISTER NUMBER
+
+
+			if (nibbles == 0x9E && keys[V[x]] == 1) {
+					PC += 2;
+					break;
+
+			}
+			if (nibbles == 0xA1 && keys[V[x]] == 0) {
+					PC += 2;
+					break;
+			}
+
+			break;
+
+
+		}
+		case(0xF):{
+			uint8_t nibbles = (opcode & 0xFF);
+			uint8_t x = (opcode >> 8) & 0x0F; // EXTRACT REGISTER NUMBER
+
+			if (nibbles == 0x1E) {
+				std::cout << "ADD I, Vx" << std::endl;
+				I = I + V[x];
 				break;
 			}
-			if ((opcode) == 0x00EE) { //RETURN FROM SUBROUTINE
-				std::cout << "RETURN" << std::endl;
-				PC = this->pop();
-				std::cout << "THIS IS CURRENT PC " << PC << std::endl;
+			if (nibbles == 0x29) {
+				std::cout << "LD F, Vx" << std::endl;
+				I = 5 * V[x];
+				break;
 			}
-			else {
-				std::cout << "UNKNOWN OPCODE " << std::hex << opcode << std::endl;
+
+			if (nibbles == 0x33) { // FX33: Store BCD representation of Vx
+				uint8_t value = V[x];          // Value in Vx
+
+				// Calculate BCD digits
+				mem[I] = value / 100;       // Hundreds digit
+				mem[I + 1] = (value % 100) / 10; // Tens digit
+				mem[I + 2] = value % 10;         // Ones digit
+				
+
+				std::cout << "============FX33========= " << std::endl;
+
+				break;
 			}
+			if (nibbles == 0x55) { // FX55: 
+
+				for (uint8_t i = 0; i <= x; i++) {
+					mem[I + i] = V[i];
+				}
+
+				std::cout << "============FX55========= " << std::endl;
+
+				break;
+			}
+
+			if (nibbles == 0x65) { // FX65: Read registers V[0] through V[x] from memory starting at I
+				for (uint8_t i = 0; i <= x; i++) {
+					V[i] = mem[I + i];
+				}
+
+				std::cout << "============FX65========= " << std::endl;
+
+				break;
+			}
+
 			break;
 		}
+
 		default:
 			std::cout << "UNKNOWN OPCODE: " << std::hex << opcode << " at PC: " << PC << std::endl;
 		}
 	}
-
-
-	void push(int16_t element) {
-		if (SP > 16) {
+	void push(uint16_t element) {
+		if (SP > 15) { // Correct overflow condition
 			std::cerr << "STACK OVERFLOW" << std::endl;
 			return;
 		}
-		stack[++SP] = element;
+		stack[SP++] = element; // Store the element, then increment SP
 		std::cout << "WE HAVE PUSHED " << element << " ONTO THE STACK" << std::endl;
-
 	}
 
-	int16_t pop() {
-		if (SP < 0) {
-			return -1;
+	uint16_t pop() {
+		if (SP == 0) { // Correct underflow condition
+			std::cerr << "STACK UNDERFLOW" << std::endl;
+			return 0; // Return an invalid value or handle error
 		}
+		return stack[--SP]; // Decrement SP, then retrieve value
+	}
 
-		int16_t element = stack[SP];
-		stack[SP] = 0;
-		SP--;
-		std::cout << "WE HAVE POPPED " << element << " OUT OF THE STACK" << std::endl;
 
-		return element;
+	uint8_t generateRandomByte() {
+		static std::random_device rd;
+		static std::mt19937 gen(rd());
+		static std::uniform_int_distribution<> dist(0, 255);
+
+		return dist(gen);
+
 	}
 };
