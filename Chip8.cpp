@@ -5,6 +5,8 @@
 #include <iomanip> // For std::hex and std::setfill
 #include <iostream>
 #include <random>
+
+
 struct Chip8
 {
 	uint8_t mem[4096]; // Memory is 4096 bytes, from location 0x000 to 0xFFF
@@ -20,8 +22,26 @@ struct Chip8
 	bool clearScreen_flag = false;
 	uint8_t keys[16];
 	uint8_t delay_timer = 0;
+	uint8_t chip8_fontset[80] =
+	{
+		0xF0, 0x90, 0x90, 0x90, 0xF0, //0
+		0x20, 0x60, 0x20, 0x20, 0x70, //1
+		0xF0, 0x10, 0xF0, 0x80, 0xF0, //2
+		0xF0, 0x10, 0xF0, 0x10, 0xF0, //3
+		0x90, 0x90, 0xF0, 0x10, 0x10, //4
+		0xF0, 0x80, 0xF0, 0x10, 0xF0, //5
+		0xF0, 0x80, 0xF0, 0x90, 0xF0, //6
+		0xF0, 0x10, 0x20, 0x40, 0x40, //7
+		0xF0, 0x90, 0xF0, 0x90, 0xF0, //8
+		0xF0, 0x90, 0xF0, 0x10, 0xF0, //9
+		0xF0, 0x90, 0xF0, 0x90, 0x90, //A
+		0xE0, 0x90, 0xE0, 0x90, 0xE0, //B
+		0xF0, 0x80, 0x80, 0x80, 0xF0, //C
+		0xE0, 0x90, 0x90, 0x90, 0xE0, //D
+		0xF0, 0x80, 0xF0, 0x80, 0xF0, //E
+		0xF0, 0x80, 0xF0, 0x80, 0x80  //F
+	};
 
-	unsigned char x;
 	Chip8() : I(0), PC(0x200), SP(0)
 	{
 		std::fill(std::begin(mem), std::end(mem), 0);
@@ -29,7 +49,16 @@ struct Chip8
 		std::fill(std::begin(gfx), std::end(gfx), 0);
 		std::fill(std::begin(stack), std::end(stack), 0);
 		std::fill(std::begin(keys), std::end(keys), 0);
+
+
+		// Load font set into memory
+		for (int i = 0; i < 80; ++i) {
+			mem[i] = chip8_fontset[i];
+		}
 	}
+
+
+
 
 	/*
 		TODO: Load instructions into memory
@@ -126,7 +155,7 @@ struct Chip8
 			{
 				PC += 2; // Skip the next instruction
 				std::cout << "3xkk SKIP INSTRUCTION IF Vx == kk" << std::endl;
-
+				break;
 			}
 			std::cout << "3xkk SKIP INSTRUCTION IF Vx == kk (FAILED)" << std::endl;
 			break;
