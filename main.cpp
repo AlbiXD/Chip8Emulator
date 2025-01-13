@@ -32,11 +32,12 @@ void renderScreen(SDL_Renderer* renderer, const uint8_t* gfx)
 	SDL_RenderPresent(renderer); // PRESENT THE FRAME
 }
 
+
 int main(int argc, char* argv[])
 {
 	Chip8 chip;
 
-	const char* fileName = "pong.ch8";
+	const char* fileName = "roms/pong.ch8";
 
 	chip.loadROM(fileName);
 
