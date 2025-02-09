@@ -6,10 +6,10 @@
 <a>Chip-8 is a simple, interpreted programming language and virtual machine created in the 1970s for programming video games. It was designed for the RCA COSMAC VIP computer and is quite a popular as a learning tool for emulation and low-level programming.</a>
 
 <br> </br>
-<b>THIS IS NOT AN IMAGE OF MY EMULATOR JUST A REPRESENTATION OF MY FINAL PROJECT</b>
+<b>THIS IS AN IMAGE OF MY EMULATOR</b>
 <br> </br>
 
-<img src="https://user-images.githubusercontent.com/31244240/43002878-662c4d66-8bf8-11e8-9f4d-d7cd07b85819.png" alt="Image description" width="90%">
+![image](https://github.com/user-attachments/assets/968c15cc-0a81-47b2-93b6-6de4aa6dfa0e)
 
 
 
